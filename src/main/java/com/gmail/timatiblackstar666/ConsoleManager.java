@@ -8,15 +8,15 @@ import java.util.*;
 
 public class ConsoleManager {
 
-    private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_BLACK = "\u001B[30m";
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_GREEN = "\u001B[32m";
-    private static final String ANSI_YELLOW = "\u001B[33m";
-    private static final String ANSI_BLUE = "\u001B[34m";
-    private static final String ANSI_PURPLE = "\u001B[35m";
-    private static final String ANSI_CYAN = "\u001B[36m";
-    private static final String ANSI_WHITE = "\u001B[37m";
+    protected static final String ANSI_RESET = "\u001B[0m";
+    protected static final String ANSI_BLACK = "\u001B[30m";
+    protected static final String ANSI_RED = "\u001B[31m";
+    protected static final String ANSI_GREEN = "\u001B[32m";
+    protected static final String ANSI_YELLOW = "\u001B[33m";
+    protected static final String ANSI_BLUE = "\u001B[34m";
+    protected static final String ANSI_PURPLE = "\u001B[35m";
+    protected static final String ANSI_CYAN = "\u001B[36m";
+    protected static final String ANSI_WHITE = "\u001B[37m";
 
     private Map<String, String> allCommand = new HashMap<>();
     private String userName = "Guest";
@@ -46,11 +46,24 @@ public class ConsoleManager {
         addNewCommand("help", "Show list of available commands");
         addNewCommand("time", "Show current date and time");
         addNewCommand("clear", "Clear console display");
+        addNewCommand("new", "Create a new file, by default its file named 'unknown.txt'. To specify tye, name and expansion add options -f/-d(directory)  'name' ");
     }
 
     private void cleanAndExit(int code){
         clearConsole();
         System.exit(code);
+    }
+
+    private void exitFromConsole(){
+        System.out.println("\u001B[44m"+ANSI_WHITE+"\n\tGood by "+userName+"\t"+ANSI_RESET);
+        try {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e){
+            e.printStackTrace();
+            cleanAndExit(1);
+        }
+        cleanAndExit(0);
     }
 
     private void drawLoading(){
@@ -75,13 +88,13 @@ public class ConsoleManager {
 
     private void printCurrentTime(){
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        System.out.println(ANSI_BLUE+formatter.format(new Date())+ANSI_RESET);
+        System.out.println(ANSI_PURPLE+formatter.format(new Date())+ANSI_RESET);
     }
 
-    private void executeCommand(String command){
-        switch (command){
+    private void executeCommand(String[] command){
+        switch (command[0]){
             case "exit":{
-                cleanAndExit(0);
+                exitFromConsole();
                 break;
             }
             case "clear":{
@@ -93,7 +106,12 @@ public class ConsoleManager {
                 break;
             }
             case "help":{
-                allCommand.forEach((k, v)-> System.out.println(ANSI_GREEN+k+" -- "+ANSI_BLUE+v+ANSI_RESET));
+                allCommand.forEach((k, v)-> System.out.println(ANSI_BLUE+k+ANSI_WHITE+" -- "+v+ANSI_RESET));
+                break;
+            }
+            case "new":{
+                ConsoleFileWorker cfw = new ConsoleFileWorker();
+                cfw.newFile(command);
                 break;
             }
         }
@@ -103,7 +121,7 @@ public class ConsoleManager {
         String [] cmd = command.split(" ");
         for (Map.Entry<String, String> m : allCommand.entrySet()) {
             if (cmd[0].equals(m.getKey())){
-                executeCommand(cmd[0]);
+                executeCommand(cmd);
                 return true;
             }
         }
@@ -116,7 +134,6 @@ public class ConsoleManager {
         System.out.flush();
     }
 
-
     protected void runConsole(){
         BufferedReader rd = null;
         String		line;
@@ -124,7 +141,8 @@ public class ConsoleManager {
         initCommandList();
         clearConsole();
         drawLoading();
-        System.out.println("\u001B[44m"+ANSI_YELLOW+"\tWelcome "+userName+" in admin console!"+ANSI_RESET);
+        System.out.println("\u001B[44m"+ANSI_YELLOW+"\tWelcome "+userName+" in admin console!\t"+ANSI_RESET);
+        System.out.println(ANSI_CYAN+"type 'help' to see all options"+ANSI_RESET);
         try{
             rd = new BufferedReader(new InputStreamReader(System.in));
             while((line = rd.readLine()) != null){
@@ -144,14 +162,6 @@ public class ConsoleManager {
                 }
             }
         }
-        System.out.println("\u001B[44m"+ANSI_YELLOW+"\n\tGood by"+ANSI_RESET);
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-            cleanAndExit(1);
-        }
-        cleanAndExit(0);
+
     }
 }
