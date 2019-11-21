@@ -19,6 +19,7 @@ public class ConsoleManager {
     protected static final String ANSI_WHITE = "\u001B[37m";
 
     private Map<String, String> allCommand = new HashMap<>();
+    private ArrayList<ConsoleFileWorker> userFiles = new ArrayList<>();
     private String userName = "Guest";
 
     public ConsoleManager() {
@@ -26,6 +27,8 @@ public class ConsoleManager {
 
     public ConsoleManager(String userName) {
         this.userName = userName;
+        if (!ConsoleFileWorker.createWorkDirector(userName))
+            cleanAndExit(1);
     }
 
     public String getUserName() {
@@ -41,12 +44,28 @@ public class ConsoleManager {
             allCommand.put(command, description);
     }
 
+    private boolean loadFilesFromWorkDir(){
+        String []files = ConsoleFileWorker.getFilesNameOfDir(this.userName);
+        if (files != null){
+            for(String name : files){
+                System.out.println(name);
+                userFiles.add(new ConsoleFileWorker(this.userName, name));
+            }
+            return true;
+        }
+        return false;
+    }
+
     private void initCommandList(){
         addNewCommand("exit", "Exit");
         addNewCommand("help", "Show list of available commands");
         addNewCommand("time", "Show current date and time");
         addNewCommand("clear", "Clear console display");
-        addNewCommand("new", "Create a new file, by default its file named 'unknown.txt'. To specify tye, name and expansion add options -f/-d(directory)  'name' ");
+        addNewCommand("new", "Create a new file, by default its file named 'unknown.txt'. To specify tye, name and expansion add options -f/-d(directory)  'name'." +
+                "\n The file will created on your working directory");
+        addNewCommand("pwd", "Show current directory");
+        addNewCommand("workDir", "Show yur work directory");
+        addNewCommand("ls", "List your current directory");
     }
 
     private void cleanAndExit(int code){
@@ -93,6 +112,14 @@ public class ConsoleManager {
 
     private void executeCommand(String[] command){
         switch (command[0]){
+            case "pwd": {
+                System.out.println(ANSI_PURPLE+System.getProperty("user.dir")+ANSI_RESET);
+                break;
+            }
+            case "workDir":{
+                System.out.println(ANSI_PURPLE+System.getProperty("user.dir")+"/"+userName+ANSI_RESET);
+                break;
+            }
             case "exit":{
                 exitFromConsole();
                 break;
@@ -109,9 +136,14 @@ public class ConsoleManager {
                 allCommand.forEach((k, v)-> System.out.println(ANSI_BLUE+k+ANSI_WHITE+" -- "+v+ANSI_RESET));
                 break;
             }
+            case "ls":{
+                userFiles.forEach((f) -> System.out.println(f.isFile() ? "f -  " : "d - " + ANSI_CYAN + f.getFileName() + ANSI_RESET));
+                break;
+            }
             case "new":{
-                ConsoleFileWorker cfw = new ConsoleFileWorker();
-                cfw.newFile(command);
+                ConsoleFileWorker cfw = new ConsoleFileWorker(userName);
+                if(cfw.newFile(command))
+                    userFiles.add(cfw);
                 break;
             }
         }
@@ -139,6 +171,8 @@ public class ConsoleManager {
         String		line;
 
         initCommandList();
+        loadFilesFromWorkDir();
+
         clearConsole();
         drawLoading();
         System.out.println("\u001B[44m"+ANSI_YELLOW+"\tWelcome "+userName+" in admin console!\t"+ANSI_RESET);
@@ -146,7 +180,8 @@ public class ConsoleManager {
         try{
             rd = new BufferedReader(new InputStreamReader(System.in));
             while((line = rd.readLine()) != null){
-                guessCommand(line);
+                if(!line.equals(""))
+                        guessCommand(line);
             }
         }catch(IOException e){
             System.err.println("\nError reading from console");
