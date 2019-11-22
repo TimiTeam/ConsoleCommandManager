@@ -56,6 +56,7 @@ public class ConsoleManager {
         addNewCommand("pwd", "Show current directory");
         addNewCommand("workDir", "Show yur work directory");
         addNewCommand("ls", "List your current directory");
+	addNewCommand("delete", "Delete your file or folder on your work directory. Type 'delete <name>'");
     }
 
     private void cleanAndExit(int code){
@@ -134,6 +135,9 @@ public class ConsoleManager {
                 this.folderManager.createNewFile(command);
                 break;
             }
+	    case "delete":{
+		this.folderManager.deleteFile(command);
+	    }
         }
     }
 

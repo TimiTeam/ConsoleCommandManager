@@ -1,12 +1,11 @@
 package com.gmail.timatiblackstar666;
 
 import java.io.File;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.function.ObjIntConsumer;
+import java.util.*;
+import java.util.function.*;
 
 public class FolderManager {
-    private Set<ConsoleFileWorker> folderConent = new LinkedHashSet<>();
+    private Set<ConsoleFileWorker> folderContent = new LinkedHashSet<>();
     private File workFolder;
     private int size = 0;
 
@@ -29,7 +28,7 @@ public class FolderManager {
                     con.accept(file, deep);
                 if (file.isDirectory())
                     listCurDir(file, deep + 5, con);
-                this.folderConent.add(new ConsoleFileWorker(file));
+                this.folderContent.add(new ConsoleFileWorker(file));
             }
         }
     }
@@ -42,6 +41,37 @@ public class FolderManager {
         );
     }
 
+    public void deleteFile(String []var){
+    	if (var.length < 2)
+		System.out.println(ConsoleManager.ANSI_RED+"Need ender file name"+ConsoleManager.ANSI_RESET);
+	else if (var.length > 2){
+		System.out.print(ConsoleManager.ANSI_RED+"Unknown options: "+ConsoleManager.ANSI_RESET);
+		for(String s :var)
+			System.out.print(s+" ");
+		System.out.println("");
+	}
+	else{
+		String name = var[1];
+		boolean del = false;
+		Iterator<ConsoleFileWorker> iter = this.folderContent.iterator();
+		File file;
+		while(iter.hasNext() && !del){
+			file = iter.next().getFile();
+			if (file.getName().equals(name)){
+				iter.remove();
+				file.delete();
+				del = true;
+			}
+		}
+		System.out.print(ConsoleManager.ANSI_YELLOW+name+ConsoleManager.ANSI_RESET+": ");
+		if (del){
+			System.out.println(ConsoleManager.ANSI_CYAN+"Successful delete");
+		}else
+			System.out.println(ConsoleManager.ANSI_RED+"Not Found");
+		System.out.print(ConsoleManager.ANSI_RESET);
+	}
+    }
+
     public void createNewFile(String []args){
         if (args.length > 2)
             args[2] = this.workFolder.getName()+"/"+args[2];
@@ -50,6 +80,6 @@ public class FolderManager {
         }
         ConsoleFileWorker cfw = new ConsoleFileWorker();
         if(cfw.newFile(args))
-            this.folderConent.add(cfw);
+            this.folderContent.add(cfw);
     }
 }

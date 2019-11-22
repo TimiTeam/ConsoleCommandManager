@@ -24,6 +24,10 @@ public class ConsoleFileWorker {
         return file.getName();
     }
 
+    public File getFile(){
+    	return this.file;
+    }
+
     private boolean successMessage(String name){
         System.out.println(ConsoleManager.ANSI_CYAN+name+ConsoleManager.ANSI_GREEN+" Successful create"+ConsoleManager.ANSI_RESET);
         return true;
@@ -40,7 +44,7 @@ public class ConsoleFileWorker {
         Scanner input = new Scanner(System.in);
         String ansv;
         while (yes){
-            System.out.println("type: "+ConsoleManager.ANSI_BLUE+"Y "+ConsoleManager.ANSI_RESET+"or "+ConsoleManager.ANSI_GREEN+"N"+ConsoleManager.ANSI_RESET);
+            System.out.println("type: "+ConsoleManager.ANSI_GREEN+"Y "+ConsoleManager.ANSI_RESET+"or "+ConsoleManager.ANSI_GREEN+"N"+ConsoleManager.ANSI_RESET);
             ansv = input.nextLine();
             if (ansv.equals("Y"))
                 break;
