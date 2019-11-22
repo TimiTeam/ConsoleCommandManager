@@ -19,16 +19,17 @@ public class ConsoleManager {
     protected static final String ANSI_WHITE = "\u001B[37m";
 
     private Map<String, String> allCommand = new HashMap<>();
-    private ArrayList<ConsoleFileWorker> userFiles = new ArrayList<>();
+    private FolderManager folderManager;
+
     private String userName = "Guest";
 
     public ConsoleManager() {
+        this.folderManager = new FolderManager(this.userName);
     }
 
     public ConsoleManager(String userName) {
         this.userName = userName;
-        if (!ConsoleFileWorker.createWorkDirector(userName))
-            cleanAndExit(1);
+        this.folderManager = new FolderManager(userName);
     }
 
     public String getUserName() {
@@ -44,17 +45,6 @@ public class ConsoleManager {
             allCommand.put(command, description);
     }
 
-    private boolean loadFilesFromWorkDir(){
-        String []files = ConsoleFileWorker.getFilesNameOfDir(this.userName);
-        if (files != null){
-            for(String name : files){
-                System.out.println(name);
-                userFiles.add(new ConsoleFileWorker(this.userName, name));
-            }
-            return true;
-        }
-        return false;
-    }
 
     private void initCommandList(){
         addNewCommand("exit", "Exit");
@@ -133,17 +123,15 @@ public class ConsoleManager {
                 break;
             }
             case "help":{
-                allCommand.forEach((k, v)-> System.out.println(ANSI_BLUE+k+ANSI_WHITE+" -- "+v+ANSI_RESET));
+                this.allCommand.forEach((k, v)-> System.out.println(ANSI_BLUE+k+ANSI_WHITE+" -- "+v+ANSI_RESET));
                 break;
             }
             case "ls":{
-                userFiles.forEach((f) -> System.out.println(f.isFile() ? "f -  " : "d - " + ANSI_CYAN + f.getFileName() + ANSI_RESET));
+                this.folderManager.listWorkFolder();
                 break;
             }
             case "new":{
-                ConsoleFileWorker cfw = new ConsoleFileWorker(userName);
-                if(cfw.newFile(command))
-                    userFiles.add(cfw);
+                this.folderManager.createNewFile(command);
                 break;
             }
         }
@@ -171,7 +159,6 @@ public class ConsoleManager {
         String		line;
 
         initCommandList();
-        loadFilesFromWorkDir();
 
         clearConsole();
         drawLoading();
